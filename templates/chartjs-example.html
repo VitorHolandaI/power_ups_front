@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Voltage Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; padding: 20px; text-align: center; }
+        .controls { margin-bottom: 20px; padding: 15px; background: #f4f4f4; display: inline-block; border-radius: 8px;}
+        .chart-container { width: 90%; margin: auto; }
+    </style>
+</head>
+<body>
+
+    <h1>Voltage Monitor</h1>
+
+    <div class="controls">
+        <form action="/" method="get">
+            <label for="start">From:</label>
+            <input type="date" id="start" name="start" value="{{ start_date }}">
+            
+            <label for="end">To:</label>
+            <input type="date" id="end" name="end" value="{{ end_date }}">
+            
+            <button type="submit">Update View</button>
+        </form>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        const labels = {{ labels | tojson }};
+        const data = {{ data | tojson }};
+
+        // If no data is found for the day, show an alert or empty chart
+        if (labels.length === 0) {
+            console.log("No data found for this date range.");
+        }
+
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Voltage (V)',
+                    data: data,
+                    borderColor: '#2e86de',
+                    backgroundColor: 'rgba(46, 134, 222, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.2,
+                    pointRadius: labels.length > 50 ? 0 : 3, // Hide dots if lots of data
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        title: { display: true, text: 'Voltage (V)' }
+                    },
+                    x: {
+                        title: { display: true, text: 'Time' },
+                        ticks: { maxTicksLimit: 12 }
+                    }
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

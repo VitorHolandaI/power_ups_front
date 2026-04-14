@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voltage Monitor</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+
+<h2>Voltage vs Time</h2>
+
+<form method="get">
+    <label>Start date:</label>
+    <input type="date" name="start_date" value="{{ start_date }}">
+
+    <label>End date:</label>
+    <input type="date" name="end_date" value="{{ end_date }}">
+
+    <button type="submit">Filter</button>
+</form>
+
+<div id="graph"></div>
+
+<script>
+    const graph = {{ graph_json | safe }};
+    Plotly.newPlot('graph', graph.data, graph.layout);
+</script>
+
+</body>
+</html>
+

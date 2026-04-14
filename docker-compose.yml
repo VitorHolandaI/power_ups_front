@@ -1,0 +1,10 @@
+services:
+  voltage-monitor:
+    build: .
+    ports:
+      - "8967:5000"
+    volumes:
+      - .:/app
+    restart: "always"
+    environment:
+      - FLASK_ENV=development
