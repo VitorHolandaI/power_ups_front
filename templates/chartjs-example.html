@@ -1,75 +1,323 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Voltage Monitor</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Energia</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: sans-serif; padding: 20px; text-align: center; }
-        .controls { margin-bottom: 20px; padding: 15px; background: #f4f4f4; display: inline-block; border-radius: 8px;}
-        .chart-container { width: 90%; margin: auto; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f1117;
+            color: #e0e0e0;
+            padding: 24px;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.6rem;
+            color: #fff;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+        .controls form {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #1e2130;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: 1px solid #2e3354;
+            flex-wrap: wrap;
+        }
+        .controls label { font-size: 0.85rem; color: #aaa; }
+        .controls input[type="date"] {
+            background: #2a2f45;
+            border: 1px solid #3d4468;
+            color: #fff;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .controls button {
+            background: #2e86de;
+            color: #fff;
+            border: none;
+            padding: 7px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .controls button:hover { background: #1a6fc4; }
+
+        /* Stats cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #1e2130;
+            border: 1px solid #2e3354;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-card .stat-label {
+            font-size: 0.72rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+        .stat-card .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+        .stat-card .stat-unit {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 2px;
+        }
+        .stat-card.highlight { border-color: #2e86de; }
+        .stat-card.highlight .stat-value { color: #2e86de; }
+        .stat-card.status-ok { border-color: #27ae60; }
+        .stat-card.status-ok .stat-value { color: #2ecc71; font-size: 1.1rem; }
+        .stat-card.status-warn { border-color: #e67e22; }
+        .stat-card.status-warn .stat-value { color: #e67e22; font-size: 1.1rem; }
+        .stat-card.status-crit { border-color: #e74c3c; }
+        .stat-card.status-crit .stat-value { color: #e74c3c; font-size: 1.1rem; }
+
+        /* Chart tabs */
+        .chart-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .tab-btn {
+            background: #1e2130;
+            border: 1px solid #2e3354;
+            color: #aaa;
+            padding: 6px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.15s;
+        }
+        .tab-btn.active {
+            background: #2e86de;
+            border-color: #2e86de;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* Charts */
+        .chart-panel { display: none; }
+        .chart-panel.active { display: block; }
+        .chart-container {
+            background: #1e2130;
+            border: 1px solid #2e3354;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 60px;
+            color: #555;
+            font-size: 1.1rem;
+            background: #1e2130;
+            border-radius: 10px;
+            border: 1px dashed #2e3354;
+        }
+
+        .footer-info {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 0.78rem;
+            color: #555;
+        }
     </style>
 </head>
 <body>
 
-    <h1>Voltage Monitor</h1>
+<h1>Monitor de Energia UPS</h1>
 
-    <div class="controls">
-        <form action="/" method="get">
-            <label for="start">From:</label>
-            <input type="date" id="start" name="start" value="{{ start_date }}">
-            
-            <label for="end">To:</label>
-            <input type="date" id="end" name="end" value="{{ end_date }}">
-            
-            <button type="submit">Update View</button>
-        </form>
+<div class="controls">
+    <form action="/" method="get">
+        <label for="start">De:</label>
+        <input type="date" id="start" name="start" value="{{ start_date }}">
+        <label for="end">Até:</label>
+        <input type="date" id="end" name="end" value="{{ end_date }}">
+        <button type="submit">Atualizar</button>
+    </form>
+</div>
+
+{% if stats %}
+<div class="stats-grid">
+    <div class="stat-card highlight">
+        <div class="stat-label">Tensão Atual</div>
+        <div class="stat-value">{{ stats.voltage_last }}</div>
+        <div class="stat-unit">Volts</div>
     </div>
+    <div class="stat-card">
+        <div class="stat-label">Tensão Mínima</div>
+        <div class="stat-value">{{ stats.voltage_min }}</div>
+        <div class="stat-unit">Volts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Tensão Máxima</div>
+        <div class="stat-value">{{ stats.voltage_max }}</div>
+        <div class="stat-unit">Volts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Tensão Média</div>
+        <div class="stat-value">{{ stats.voltage_avg }}</div>
+        <div class="stat-unit">Volts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Carga Atual</div>
+        <div class="stat-value">{{ stats.load_last }}</div>
+        <div class="stat-unit">% (média: {{ stats.load_avg }}%)</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Temp. Bateria</div>
+        <div class="stat-value">{{ stats.temp_last }}</div>
+        <div class="stat-unit">°C</div>
+    </div>
+    <div class="stat-card {% if stats.status_last == 'OL' %}status-ok{% elif stats.status_last == 'OB' %}status-crit{% else %}status-warn{% endif %}">
+        <div class="stat-label">Status UPS</div>
+        <div class="stat-value">
+            {% if stats.status_last == 'OL' %}Online
+            {% elif stats.status_last == 'OB' %}Bateria
+            {% elif stats.status_last == 'CHRG' %}Carregando
+            {% else %}{{ stats.status_last }}{% endif %}
+        </div>
+        <div class="stat-unit">{{ stats.count }} registros</div>
+    </div>
+</div>
 
+<div class="chart-tabs">
+    <button class="tab-btn active" onclick="showTab('voltage', this)">Tensão</button>
+    <button class="tab-btn" onclick="showTab('load', this)">Carga %</button>
+    <button class="tab-btn" onclick="showTab('temp', this)">Temperatura</button>
+</div>
+
+<div id="panel-voltage" class="chart-panel active">
     <div class="chart-container">
-        <canvas id="myChart"></canvas>
+        <canvas id="chartVoltage"></canvas>
     </div>
+</div>
+<div id="panel-load" class="chart-panel">
+    <div class="chart-container">
+        <canvas id="chartLoad"></canvas>
+    </div>
+</div>
+<div id="panel-temp" class="chart-panel">
+    <div class="chart-container">
+        <canvas id="chartTemp"></canvas>
+    </div>
+</div>
 
-    <script>
-        const labels = {{ labels | tojson }};
-        const data = {{ data | tojson }};
+{% else %}
+<div class="no-data">Nenhum dado encontrado para o período selecionado.</div>
+{% endif %}
 
-        // If no data is found for the day, show an alert or empty chart
-        if (labels.length === 0) {
-            console.log("No data found for this date range.");
+<div class="footer-info">power_front — dados de {{ start_date }} a {{ end_date }}</div>
+
+<script>
+    const labels = {{ labels | tojson }};
+    const voltages = {{ voltages | tojson }};
+    const loads = {{ loads | tojson }};
+    const temperatures = {{ temperatures | tojson }};
+
+    const chartDefaults = {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+            legend: { labels: { color: '#ccc' } },
+            tooltip: {
+                backgroundColor: '#1e2130',
+                borderColor: '#2e3354',
+                borderWidth: 1,
+                titleColor: '#fff',
+                bodyColor: '#ccc',
+            }
+        },
+        scales: {
+            x: {
+                ticks: { color: '#888', maxTicksLimit: 14, maxRotation: 45 },
+                grid: { color: '#1a1f30' }
+            },
+            y: {
+                ticks: { color: '#888' },
+                grid: { color: '#1a1f30' }
+            }
         }
+    };
 
-        const ctx = document.getElementById('myChart').getContext('2d');
-        const myChart = new Chart(ctx, {
+    function makeChart(id, label, data, color, unit, yLabel) {
+        const ctx = document.getElementById(id);
+        if (!ctx) return;
+        return new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Voltage (V)',
+                    label: label,
                     data: data,
-                    borderColor: '#2e86de',
-                    backgroundColor: 'rgba(46, 134, 222, 0.1)',
+                    borderColor: color,
+                    backgroundColor: color.replace(')', ', 0.1)').replace('rgb', 'rgba'),
                     borderWidth: 2,
                     tension: 0.2,
-                    pointRadius: labels.length > 50 ? 0 : 3, // Hide dots if lots of data
+                    pointRadius: labels.length > 100 ? 0 : 3,
                     fill: true
                 }]
             },
             options: {
-                responsive: true,
+                ...chartDefaults,
+                plugins: {
+                    ...chartDefaults.plugins,
+                    tooltip: {
+                        ...chartDefaults.plugins.tooltip,
+                        callbacks: {
+                            label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y} ${unit}`
+                        }
+                    }
+                },
                 scales: {
+                    ...chartDefaults.scales,
                     y: {
-                        beginAtZero: false,
-                        title: { display: true, text: 'Voltage (V)' }
-                    },
-                    x: {
-                        title: { display: true, text: 'Time' },
-                        ticks: { maxTicksLimit: 12 }
+                        ...chartDefaults.scales.y,
+                        title: { display: true, text: yLabel, color: '#888' }
                     }
                 }
             }
         });
-    </script>
+    }
+
+    makeChart('chartVoltage', 'Tensão', voltages, 'rgb(46, 134, 222)', 'V', 'Tensão (V)');
+    makeChart('chartLoad', 'Carga', loads, 'rgb(39, 174, 96)', '%', 'Carga (%)');
+    makeChart('chartTemp', 'Temperatura', temperatures, 'rgb(230, 126, 34)', '°C', 'Temperatura (°C)');
+
+    function showTab(name, btn) {
+        document.querySelectorAll('.chart-panel').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('panel-' + name).classList.add('active');
+        btn.classList.add('active');
+    }
+</script>
 
 </body>
 </html>
