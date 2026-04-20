@@ -72,9 +72,12 @@ def homepage():
     # Stats
     stats = {}
     if voltages:
+        sorted_v = sorted(voltages)
+        p99_idx = max(0, int(len(sorted_v) * 0.99) - 1)
         stats["voltage_min"] = round(min(voltages), 1)
         stats["voltage_max"] = round(max(voltages), 1)
         stats["voltage_avg"] = round(sum(voltages) / len(voltages), 1)
+        stats["voltage_p99"] = round(sorted_v[p99_idx], 1)
         stats["voltage_last"] = voltages[-1]
         stats["temp_last"] = temperatures[-1]
         stats["load_last"] = loads[-1]

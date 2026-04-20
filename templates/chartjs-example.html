@@ -187,6 +187,11 @@
         <div class="stat-unit">Volts</div>
     </div>
     <div class="stat-card">
+        <div class="stat-label">Tensão P99</div>
+        <div class="stat-value">{{ stats.voltage_p99 }}</div>
+        <div class="stat-unit">Volts (99% do tempo)</div>
+    </div>
+    <div class="stat-card">
         <div class="stat-label">Carga Atual</div>
         <div class="stat-value">{{ stats.load_last }}</div>
         <div class="stat-unit">% (média: {{ stats.load_avg }}%)</div>
