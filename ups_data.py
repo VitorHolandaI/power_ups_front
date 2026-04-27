@@ -1,7 +1,7 @@
 """Utilities for parsing UPS logs and preparing dashboard data."""
 
 from datetime import date, datetime
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, Optional
 
 DATA_FILE = "data.txt"
 DATE_FORMAT = "%Y-%m-%d"
@@ -38,7 +38,7 @@ class UpsReading(NamedTuple):
     battery_voltage: float
     status: str
     load: int
-    runtime_seconds: int | None
+    runtime_seconds: Optional[int]
 
 
 def parse_date(value: str) -> date:
@@ -48,8 +48,8 @@ def parse_date(value: str) -> date:
 
 
 def parse_date_range(
-    start_value: str | None,
-    end_value: str | None,
+    start_value: Optional[str],
+    end_value: Optional[str],
 ) -> tuple[date, date, str, str]:
     """Parse selected dates or fall back to today's date."""
 
@@ -64,7 +64,7 @@ def parse_date_range(
         return date.today(), date.today(), today_str, today_str
 
 
-def format_runtime(seconds: int | None) -> str:
+def format_runtime(seconds: Optional[int]) -> str:
     """Format a NUT battery.runtime value into a dashboard label."""
 
     # Old log rows do not have battery.runtime, so keep them displayable.
@@ -92,7 +92,7 @@ def build_label(file_date: date, time_value: str, multi_day: bool) -> str:
     return f"{file_date.strftime('%d/%m')} {time_display}"
 
 
-def parse_runtime(parts: list[str]) -> int | None:
+def parse_runtime(parts: list[str]) -> Optional[int]:
     """Parse optional battery.runtime seconds from a split log row."""
 
     # Keep backward compatibility with existing seven-column data.txt rows.
@@ -106,7 +106,7 @@ def parse_log_line(
     line: str,
     start_date: date,
     end_date: date,
-) -> UpsReading | None:
+) -> Optional[UpsReading]:
     """Parse one upslog row if it belongs to the selected date range."""
 
     # Bad log lines are ignored so one corrupt sample does not hide all charts.
@@ -205,8 +205,8 @@ def downsample(values: list[Any]) -> list[Any]:
 
 
 def build_dashboard_context(
-    start_value: str | None,
-    end_value: str | None,
+    start_value: Optional[str],
+    end_value: Optional[str],
 ) -> dict[str, Any]:
     """Build the template context for the UPS dashboard."""
 
