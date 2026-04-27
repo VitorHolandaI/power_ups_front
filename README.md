@@ -17,6 +17,34 @@ O frontend lê os dados de `data.txt`, gerado automaticamente via crontab no ser
 - `upslog` (NUT — Network UPS Tools) coleta métricas do UPS a cada 60 segundos e grava direto em `data.txt`
 - O frontend lê `data.txt` e renderiza os gráficos e cards de métricas
 
+## Formato esperado do log
+
+Cada linha do arquivo precisa ter os campos abaixo, separados por `;`, nesta ordem:
+
+```text
+data; hora; battery.charge; input.voltage; battery.voltage; ups.status; ups.load; battery.runtime
+```
+
+Exemplo de linha:
+
+```text
+2026,04,27; 09,30,00; 100; 221.0; 28.4; OL; 0; 5001
+```
+
+O campo `battery.runtime` vem do `upsc myups` e representa a autonomia estimada em segundos. O frontend converte esse valor para horas/minutos.
+
+No crontab, os sinais `%` precisam estar escapados com `\`:
+
+```cron
+0 7 * * * /usr/bin/upslog -i 2 -s myups -l /home/vitor/logreal.log -f "\%TIME @Y,@m,@d; @H,@M,@S\%; \%VAR battery.charge\%; \%VAR input.voltage\%; \%VAR battery.voltage\%; \%VAR ups.status\%; \%VAR ups.load\%; \%VAR battery.runtime\%"
+```
+
+Para testar manualmente no terminal, use o mesmo formato sem escapar `%`:
+
+```bash
+/usr/bin/upslog -i 2 -s myups -l /home/vitor/logreal.log -f "%TIME @Y,@m,@d; @H,@M,@S%; %VAR battery.charge%; %VAR input.voltage%; %VAR battery.voltage%; %VAR ups.status%; %VAR ups.load%; %VAR battery.runtime%"
+```
+
 ## Funcionalidades
 
 - Métricas em tempo real: tensão atual, mínima, máxima e média
