@@ -4,12 +4,12 @@ import os
 
 from flask import Flask, render_template, request
 
-from ups_data import build_dashboard_context
+from power_ups_dashboard.ups_data import build_dashboard_context
 
 HOST = os.environ.get("UPS_DASHBOARD_HOST", "127.0.0.1")
 
 # Keep this file small because it is the production WSGI entrypoint.
-app = Flask(__name__)
+app = Flask(__name__, template_folder="power_ups_dashboard/templates")
 
 
 @app.route("/")
@@ -18,7 +18,7 @@ def homepage() -> str:
 
     # The data module owns parsing so this route only handles HTTP concerns.
     return render_template(
-        "chartjs-example.html",
+        "dashboard.html",
         **build_dashboard_context(
             request.args.get("start"),
             request.args.get("end"),

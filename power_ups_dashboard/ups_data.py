@@ -1,9 +1,10 @@
 """Utilities for parsing UPS logs and preparing dashboard data."""
 
+import os
 from datetime import date, datetime
 from typing import Any, NamedTuple, Optional
 
-DATA_FILE = "data.txt"
+DATA_FILE = os.environ.get("UPS_DASHBOARD_DATA_FILE", "data/data.txt")
 DATE_FORMAT = "%Y-%m-%d"
 LOG_DATE_FORMAT = "%Y,%m,%d"
 MAX_CHART_POINTS = 500

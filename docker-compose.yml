@@ -9,3 +9,4 @@ services:
     environment:
       - FLASK_ENV=development
       - UPS_DASHBOARD_HOST=0.0.0.0
+      - UPS_DASHBOARD_DATA_FILE=data/data.txt

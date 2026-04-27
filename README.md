@@ -4,18 +4,35 @@ Dashboard web para monitoramento em tempo real de nobreaks (UPS), exibindo tens�
 
 ## Screenshot
 
-![Dashboard](imagem/Screenshot_2026-04-17_15-10-07.png)
+![Dashboard](docs/assets/dashboard.png)
 
 ## Como funciona
 
-O frontend lê os dados de `data.txt`, gerado automaticamente via crontab no servidor:
+O frontend lê os dados de `data/data.txt`, gerado automaticamente via crontab no servidor:
 
 ```cron
-0 7 * * * /usr/bin/upslog -i 60 -s myups -l /home/user/git/power_front/data.txt -f "\%TIME @Y,@m,@d; @H,@M,@S\%; \%VAR battery.charge\%; \%VAR input.voltage\%; \%VAR battery.voltage\%; \%VAR ups.status\%; \%VAR ups.load\%; \%VAR battery.runtime\%"
+0 7 * * * /usr/bin/upslog -i 60 -s myups -l /home/user/git/power_ups_front/data/data.txt -f "\%TIME @Y,@m,@d; @H,@M,@S\%; \%VAR battery.charge\%; \%VAR input.voltage\%; \%VAR battery.voltage\%; \%VAR ups.status\%; \%VAR ups.load\%; \%VAR battery.runtime\%"
 ```
 
-- `upslog` (NUT — Network UPS Tools) coleta métricas do UPS a cada 60 segundos e grava direto em `data.txt`
-- O frontend lê `data.txt` e renderiza os gráficos e cards de métricas
+- `upslog` (NUT — Network UPS Tools) coleta métricas do UPS a cada 60 segundos e grava direto em `data/data.txt`
+- O frontend lê `data/data.txt` e renderiza os gráficos e cards de métricas
+
+O caminho do arquivo pode ser alterado pela variável `UPS_DASHBOARD_DATA_FILE`.
+
+## Organização do projeto
+
+```text
+.
+├── app.py                         # Entrada Flask/WSGI
+├── power_ups_dashboard/           # Código e templates da aplicação
+│   ├── ups_data.py
+│   └── templates/dashboard.html
+├── data/                          # Logs locais do UPS
+│   ├── data.txt
+│   └── legacy-data.txt
+├── docs/assets/                   # Imagens usadas na documentação
+└── docs/legacy/                   # Arquivos antigos mantidos como referência
+```
 
 ## Formato esperado do log
 

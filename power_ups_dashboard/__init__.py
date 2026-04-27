@@ -1,0 +1,1 @@
+"""UPS dashboard application package."""
