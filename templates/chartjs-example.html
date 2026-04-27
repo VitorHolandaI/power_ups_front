@@ -191,15 +191,25 @@
         <div class="stat-value">{{ stats.voltage_p99 }}</div>
         <div class="stat-unit">Volts (99% do tempo)</div>
     </div>
+    <div class="stat-card highlight">
+        <div class="stat-label">Autonomia</div>
+        <div class="stat-value">{{ stats.runtime_last }}</div>
+        <div class="stat-unit">estimada pelo UPS</div>
+    </div>
     <div class="stat-card">
-        <div class="stat-label">Carga Atual</div>
+        <div class="stat-label">Bateria</div>
+        <div class="stat-value">{{ stats.battery_charge_last }}</div>
+        <div class="stat-unit">% de carga</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Uso Atual</div>
         <div class="stat-value">{{ stats.load_last }}</div>
         <div class="stat-unit">% (média: {{ stats.load_avg }}%)</div>
     </div>
     <div class="stat-card">
-        <div class="stat-label">Temp. Bateria</div>
-        <div class="stat-value">{{ stats.temp_last }}</div>
-        <div class="stat-unit">°C</div>
+        <div class="stat-label">Tensão Bateria</div>
+        <div class="stat-value">{{ stats.battery_voltage_last }}</div>
+        <div class="stat-unit">Volts</div>
     </div>
     <div class="stat-card {% if stats.status_last == 'OL' %}status-ok{% elif stats.status_last == 'OB' %}status-crit{% else %}status-warn{% endif %}">
         <div class="stat-label">Status UPS</div>
@@ -215,8 +225,8 @@
 
 <div class="chart-tabs">
     <button class="tab-btn active" onclick="showTab('voltage', this)">Tensão</button>
-    <button class="tab-btn" onclick="showTab('load', this)">Carga %</button>
-    <button class="tab-btn" onclick="showTab('temp', this)">Temperatura</button>
+    <button class="tab-btn" onclick="showTab('load', this)">Uso %</button>
+    <button class="tab-btn" onclick="showTab('battery-voltage', this)">Bateria V</button>
 </div>
 
 <div id="panel-voltage" class="chart-panel active">
@@ -229,9 +239,9 @@
         <canvas id="chartLoad"></canvas>
     </div>
 </div>
-<div id="panel-temp" class="chart-panel">
+<div id="panel-battery-voltage" class="chart-panel">
     <div class="chart-container">
-        <canvas id="chartTemp"></canvas>
+        <canvas id="chartBatteryVoltage"></canvas>
     </div>
 </div>
 
@@ -245,7 +255,7 @@
     const labels = {{ labels | tojson }};
     const voltages = {{ voltages | tojson }};
     const loads = {{ loads | tojson }};
-    const temperatures = {{ temperatures | tojson }};
+    const batteryVoltages = {{ battery_voltages | tojson }};
 
     const chartDefaults = {
         responsive: true,
@@ -313,8 +323,15 @@
     }
 
     makeChart('chartVoltage', 'Tensão', voltages, 'rgb(46, 134, 222)', 'V', 'Tensão (V)');
-    makeChart('chartLoad', 'Carga', loads, 'rgb(39, 174, 96)', '%', 'Carga (%)');
-    makeChart('chartTemp', 'Temperatura', temperatures, 'rgb(230, 126, 34)', '°C', 'Temperatura (°C)');
+    makeChart('chartLoad', 'Uso', loads, 'rgb(39, 174, 96)', '%', 'Uso (%)');
+    makeChart(
+        'chartBatteryVoltage',
+        'Tensão da bateria',
+        batteryVoltages,
+        'rgb(230, 126, 34)',
+        'V',
+        'Tensão da bateria (V)'
+    );
 
     function showTab(name, btn) {
         document.querySelectorAll('.chart-panel').forEach(p => p.classList.remove('active'));

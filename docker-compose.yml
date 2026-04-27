@@ -8,3 +8,4 @@ services:
     restart: "always"
     environment:
       - FLASK_ENV=development
+      - UPS_DASHBOARD_HOST=0.0.0.0

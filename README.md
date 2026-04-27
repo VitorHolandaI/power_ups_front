@@ -1,6 +1,6 @@
 # Monitor de Energia UPS
 
-Dashboard web para monitoramento em tempo real de nobreaks (UPS), exibindo tensão, carga e temperatura da bateria.
+Dashboard web para monitoramento em tempo real de nobreaks (UPS), exibindo tensão, carga, uso, autonomia e tensão da bateria.
 
 ## Screenshot
 
@@ -11,7 +11,7 @@ Dashboard web para monitoramento em tempo real de nobreaks (UPS), exibindo tens�
 O frontend lê os dados de `data.txt`, gerado automaticamente via crontab no servidor:
 
 ```cron
-0 7 * * * /usr/bin/upslog -i 60 -s myups -l /home/user/git/power_front/data.txt -f "\%TIME @Y,@m,@d; @H,@M,@S\%; \%VAR battery.charge\%; \%VAR input.voltage\%; \%VAR battery.voltage\%; \%VAR ups.status\%; \%VAR ups.load\%"
+0 7 * * * /usr/bin/upslog -i 60 -s myups -l /home/user/git/power_front/data.txt -f "\%TIME @Y,@m,@d; @H,@M,@S\%; \%VAR battery.charge\%; \%VAR input.voltage\%; \%VAR battery.voltage\%; \%VAR ups.status\%; \%VAR ups.load\%; \%VAR battery.runtime\%"
 ```
 
 - `upslog` (NUT — Network UPS Tools) coleta métricas do UPS a cada 60 segundos e grava direto em `data.txt`
@@ -20,13 +20,14 @@ O frontend lê os dados de `data.txt`, gerado automaticamente via crontab no ser
 ## Funcionalidades
 
 - Métricas em tempo real: tensão atual, mínima, máxima e média
-- Carga da bateria e temperatura
+- Carga da bateria, uso atual e autonomia estimada
+- Tensão da bateria
 - Status online/offline do UPS
-- Gráficos históricos por período (Tensão, Carga %, Temperatura)
+- Gráficos históricos por período (Tensão, Uso %, Bateria V)
 - Filtro por intervalo de datas
 
 ## Tecnologias
 
-- React + TypeScript
-- Recharts (gráficos)
+- Flask
+- Chart.js
 - Dark theme
